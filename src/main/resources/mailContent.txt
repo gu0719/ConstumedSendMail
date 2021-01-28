@@ -1,0 +1,1 @@
+<p style="margin:0;">dear $USER_NAME:</p><p style="margin:0;">&nbsp; &nbsp; 你的账号是$FIELD1，密码$FIELD2</p><p style="margin:0;">&nbsp; &nbsp; 具体内容请查阅附件</p><p style="margin:0;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;$FIELD3</p>
