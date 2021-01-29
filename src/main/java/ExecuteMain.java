@@ -27,6 +27,7 @@ public class ExecuteMain {
 
     public static void main(String[] args) throws MessagingException, IOException {
         String confDir = args[0];
+        String fileDir = confDir + "/file";
         File cDir = new File(confDir);
 
         if (cDir == null && cDir.listFiles().length == 0) {
@@ -60,13 +61,17 @@ public class ExecuteMain {
             List<File> fileList = new ArrayList<>();
             String emailContent = mailContentModel;
             String receiverAddress = map.get(EMAIL_ADDRESS);
-            String fileDir = map.get(ATTACH_DIR);
+            String fileName = map.get(ATTACH_DIR);
             //装配附件
-            File dir = new File(fileDir);
-            if (dir.exists() && dir.isDirectory()) {
-                File[] files = dir.listFiles();
-                if (files != null && files.length > 0) {
-                    fileList.addAll(Arrays.asList(files));
+            File dir = new File(fileDir+"/"+fileName);
+            if (dir.exists()) {
+                if (dir.isDirectory()) {
+                    File[] files = dir.listFiles();
+                    if (files != null && files.length > 0) {
+                        fileList.addAll(Arrays.asList(files));
+                    }
+                } else {
+                    fileList.add(dir);
                 }
             }
 
@@ -82,7 +87,7 @@ public class ExecuteMain {
             System.out.println("正文（html格式）：" + emailContent);
             System.out.println("附件数：" + fileList.size());
             //发送邮件
-                sendEmail.doSendHtmlEmail(theme, emailContent, receiverAddress, fileList);
+            sendEmail.doSendHtmlEmail(theme, emailContent, receiverAddress, fileList);
         });
         System.exit(0);
 
