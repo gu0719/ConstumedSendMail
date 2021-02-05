@@ -56,7 +56,7 @@ public class SendEmail {
     }
 
 
-    public void doSendHtmlEmail(String subject, String sendHtml, String receiveUser, List<File> attachments) {
+    public boolean doSendHtmlEmail(String subject, String sendHtml, String receiveUser, List<File> attachments) {
         try {
             // 发件人
             InternetAddress from = new InternetAddress(sender_username);
@@ -116,6 +116,7 @@ public class SendEmail {
             System.out.println("send success!");
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         } finally {
             if (transport != null) {
                 try {
@@ -125,6 +126,8 @@ public class SendEmail {
                 }
             }
         }
+        return true;
+
     }
 
 }

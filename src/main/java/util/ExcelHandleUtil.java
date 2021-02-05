@@ -23,7 +23,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelHandleUtil {
 
-
     public static List<Map<String, String>> getExcelInfo(String fileName) {
         List<Map<String, String>> result = new ArrayList<>();
 
@@ -52,6 +51,9 @@ public class ExcelHandleUtil {
             }
             //装配数据key-value
             for (int rowNum = 1; rowNum <= realRows; rowNum++) {
+                if (xssfSheet.getRow(rowNum) == null) {
+                    continue;
+                }
                 XSSFRow otherRow = xssfSheet.getRow(rowNum);
                 if (otherRow.getLastCellNum() < 0) {
                     continue;
@@ -69,6 +71,7 @@ public class ExcelHandleUtil {
                 result.add(map);
             }
             System.out.println(result);
+            System.out.println("应发邮件数：" + result.size());
         } catch (IOException | InvalidFormatException e) {
             e.printStackTrace();
         }

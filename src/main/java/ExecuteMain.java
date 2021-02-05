@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.MessagingException;
 
@@ -26,6 +27,7 @@ public class ExecuteMain {
     private static String modelFile      = "";
 
     public static void main(String[] args) throws MessagingException, IOException {
+        AtomicInteger mailCount = new AtomicInteger();
         String confDir = args[0];
         String fileDir = confDir + "/file";
         File cDir = new File(confDir);
@@ -63,7 +65,7 @@ public class ExecuteMain {
             String receiverAddress = map.get(EMAIL_ADDRESS);
             String fileName = map.get(ATTACH_DIR);
             //装配附件
-            File dir = new File(fileDir+"/"+fileName);
+            File dir = new File(fileDir + "/" + fileName);
             if (dir.exists()) {
                 if (dir.isDirectory()) {
                     File[] files = dir.listFiles();
@@ -87,8 +89,12 @@ public class ExecuteMain {
             System.out.println("正文（html格式）：" + emailContent);
             System.out.println("附件数：" + fileList.size());
             //发送邮件
-            sendEmail.doSendHtmlEmail(theme, emailContent, receiverAddress, fileList);
+            if (sendEmail.doSendHtmlEmail(theme, emailContent, receiverAddress, fileList)) {
+                mailCount.getAndIncrement();
+            }
+            ;
         });
+        System.out.println(mailCount.get());
         System.exit(0);
 
     }
