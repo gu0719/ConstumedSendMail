@@ -70,8 +70,6 @@ public class ExcelHandleUtil {
                 }
                 result.add(map);
             }
-            System.out.println(result);
-            System.out.println("应发邮件数：" + result.size());
         } catch (IOException | InvalidFormatException e) {
             e.printStackTrace();
         }

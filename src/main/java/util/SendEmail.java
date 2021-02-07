@@ -7,15 +7,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
-import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -26,15 +25,10 @@ import javax.mail.internet.MimeUtility;
 
 
 public class SendEmail {
-    private MimeMessage message;
-    private Session     session;
-    private Transport   transport;
-
+    Session session;
     private String mailHost        = "";
     private String sender_username = "";
     private String sender_password = "";
-
-    private Properties properties = new Properties();
 
 
     /*
@@ -42,6 +36,7 @@ public class SendEmail {
      */
     public SendEmail(String fileName) throws FileNotFoundException {
         InputStream in = new FileInputStream(new File(fileName));
+        Properties properties = new Properties();
         try {
             properties.load(in);
             this.mailHost = properties.getProperty("mail.smtp.host");
@@ -52,36 +47,65 @@ public class SendEmail {
         }
         session = Session.getInstance(properties);
         session.setDebug(false);// 开启后有调试信息
-        message = new MimeMessage(session);
     }
 
 
-    public boolean doSendHtmlEmail(String subject, String sendHtml, String receiveUser, List<File> attachments) {
+    public boolean doSendHtmlEmail(String subject, String sendHtml, String receiveUser, List<File> attachments, Map<String, String> contPic) {
+        MimeMessage message = new MimeMessage(session);
+        Transport transport = null;
+
         try {
             // 发件人
             InternetAddress from = new InternetAddress(sender_username);
             message.setFrom(from);
 
             // 收件人
+            if (receiveUser == null && receiveUser.isEmpty()) {
+                return false;
+            }
             InternetAddress to = new InternetAddress(receiveUser);
             message.setRecipient(Message.RecipientType.TO, to);
 
             // 邮件主题
             message.setSubject(subject);
+            // 内容
+            MimeBodyPart mailBody = new MimeBodyPart();
+            MimeMultipart mailContent = new MimeMultipart("mixed");
+            mailContent.addBodyPart(mailBody);
 
-            // 向multipart对象中添加邮件的各个部分内容，包括文本内容和附件
-            Multipart multipart = new MimeMultipart();
+            MimeMultipart body = new MimeMultipart("related");  //邮件正文也是一个组合体,需要指明组合关系
+            mailBody.setContent(body);
 
-            // 添加邮件正文
-            BodyPart contentPart = new MimeBodyPart();
-            contentPart.setContent(sendHtml, "text/html;charset=UTF-8");
-            multipart.addBodyPart(contentPart);
+            // 邮件正文由html和图片构成
+            if (contPic.size() > 0) {
+                for (Map.Entry<String, String> entry : contPic.entrySet()) {
+                    // 正文图片
+                    MimeBodyPart imgPart = new MimeBodyPart();
+                    DataSource ds = new FileDataSource(entry.getValue());
+                    DataHandler dh = new DataHandler(ds);
+                    imgPart.setDataHandler(dh);
+                    imgPart.setContentID(entry.getKey());
+                    body.addBodyPart(imgPart);
+                }
+            }
+
+            // html邮件内容
+            MimeBodyPart htmlPart = new MimeBodyPart();
+            body.addBodyPart(htmlPart);
+            MimeMultipart htmlMultipart = new MimeMultipart("alternative");
+            htmlPart.setContent(htmlMultipart);
+            MimeBodyPart htmlContent = new MimeBodyPart();
+            htmlContent.setContent(sendHtml, "text/html;charset=UTF-8");
+            htmlMultipart.addBodyPart(htmlContent);
 
             // 添加附件的内容
             if (attachments != null && attachments.size() > 0) {
                 attachments.forEach(attachment -> {
                     try {
-                        BodyPart attachmentBodyPart = new MimeBodyPart();
+                        if ("".equals(attachment)) {
+                            return;
+                        }
+                        MimeBodyPart attachmentBodyPart = new MimeBodyPart();
                         DataSource source = new FileDataSource(attachment);
                         attachmentBodyPart.setDataHandler(new DataHandler(source));
 
@@ -92,10 +116,8 @@ public class SendEmail {
 
                         //MimeUtility.encodeWord可以避免文件名乱码
                         attachmentBodyPart.setFileName(MimeUtility.encodeWord(attachment.getName()));
-                        multipart.addBodyPart(attachmentBodyPart);
-                    } catch (MessagingException e) {
-                        e.printStackTrace();
-                    } catch (UnsupportedEncodingException e) {
+                        mailContent.addBodyPart(attachmentBodyPart);
+                    } catch (MessagingException | UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
                 });
@@ -103,7 +125,7 @@ public class SendEmail {
             }
 
             // 将multipart对象放到message中
-            message.setContent(multipart);
+            message.setContent(mailContent);
             // 保存邮件
             message.saveChanges();
 
@@ -129,5 +151,6 @@ public class SendEmail {
         return true;
 
     }
+
 
 }

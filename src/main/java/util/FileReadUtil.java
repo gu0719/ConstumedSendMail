@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 public class FileReadUtil {
 
 
-
     /**
      * 解析普通文本文件  流式文件 如txt
      *
@@ -21,7 +20,8 @@ public class FileReadUtil {
         try {
             File file = new File(path);
             InputStream is = new FileInputStream(file);
-            InputStreamReader isr = new InputStreamReader(is);
+            String encode = getJavaEncode(path);
+            InputStreamReader isr = new InputStreamReader(is, encode);
             BufferedReader br = new BufferedReader(isr);
             String str = "";
             while (null != (str = br.readLine())) {
@@ -34,5 +34,12 @@ public class FileReadUtil {
         }
         return content.toString();
     }
+
+    public static String getJavaEncode(String filePath) {
+        String encode = EncodingDetect.getJavaEncode(filePath);
+        System.out.println(encode);
+        return encode;
+    }
+
 
 }
