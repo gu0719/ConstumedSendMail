@@ -110,11 +110,12 @@ public class ExecuteMain {
                     continue;
                 }
                 if (entry.getKey().contains("$CONT_PIC")) {
-                    emailContent = emailContent.replace(entry.getKey(), entry.getKey().replace("$", "") + ".jpg");
-                    contPic.put(entry.getKey().replace("$", "") + ".jpg", fileDir + "/" + entry.getValue());
+                    if(entry.getValue()!=null&&!"".equals(entry.getValue())){
+                        emailContent = emailContent.replace(entry.getKey(), entry.getKey().replace("$", "") + ".jpg");
+                        contPic.put(entry.getKey().replace("$", "") + ".jpg", fileDir + "/" + entry.getValue());
+                    }
                 } else {
                     emailContent = emailContent.replace(entry.getKey(), entry.getValue());
-
                 }
 
             }
@@ -134,7 +135,7 @@ public class ExecuteMain {
             bw1.write(sdf.format(new Date()));
             successList.forEach(successStr -> {
                 try {
-                    bw1.write(successStr);
+                    bw1.write(successStr+ "\r\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
